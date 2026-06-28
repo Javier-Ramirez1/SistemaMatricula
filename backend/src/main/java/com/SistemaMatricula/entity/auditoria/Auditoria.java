@@ -1,4 +1,4 @@
 package com.SistemaMatricula.entity.auditoria;
 
-public class AuditoriaConfig {
+public class Auditoria {
 }

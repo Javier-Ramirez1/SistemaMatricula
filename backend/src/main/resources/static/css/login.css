@@ -1,0 +1,153 @@
+/* ============================================================
+   Login — layout partido en dos.
+   Panel izquierdo: identidad del sistema, con un borde
+   "perforado" (como el talón de una boleta/recibo) que separa
+   los dos paneles — referencia directa al corazón del sistema:
+   matrícula → cuota → pago → RECIBO.
+   ============================================================ */
+
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+}
+
+.login-brand {
+  flex: 1.1;
+  position: relative;
+  background:
+    repeating-linear-gradient(
+      transparent, transparent 27px,
+      rgba(255,255,255,0.05) 27px, rgba(255,255,255,0.05) 28px
+    ),
+    linear-gradient(160deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3em 3.4em;
+  overflow: hidden;
+}
+
+.login-brand::after {
+  /* talón perforado: columna de círculos recortados sobre el borde derecho */
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -14px;
+  bottom: 0;
+  width: 28px;
+  background-image: radial-gradient(circle, var(--color-bg) 7px, transparent 7.5px);
+  background-size: 28px 34px;
+  background-repeat: repeat-y;
+  background-position: center;
+}
+
+.login-brand-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.login-brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--color-accent);
+  color: var(--color-primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.login-brand-title {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0.5em 0 0.3em;
+  max-width: 9.5em;
+}
+
+.login-brand-sub {
+  font-size: 15px;
+  color: rgba(255,255,255,0.7);
+  max-width: 26em;
+  margin: 0;
+}
+
+.login-brand-foot {
+  display: flex;
+  gap: 2.2em;
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.55);
+}
+
+.login-brand-foot strong {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 17px;
+  color: #fff;
+  font-weight: 500;
+}
+
+.login-form-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  padding: 2em;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-card h2 {
+  font-size: 24px;
+  margin-bottom: 0.2em;
+}
+
+.login-card .login-lead {
+  color: var(--color-ink-soft);
+  font-size: 14px;
+  margin-bottom: 1.8em;
+}
+
+.login-foot-hint {
+  margin-top: 1.6em;
+  font-size: 12.5px;
+  color: var(--color-ink-faint);
+  text-align: center;
+}
+
+.btn-login-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+.is-loading .btn-login-spinner { display: inline-block; }
+.is-loading .btn-login-label { opacity: 0.85; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 860px) {
+  .login-screen { flex-direction: column; }
+  .login-brand { padding: 2.2em; }
+  .login-brand::after { display: none; }
+  .login-brand-title { font-size: 28px; }
+  .login-form-side { padding: 2.4em 1.6em; }
+}

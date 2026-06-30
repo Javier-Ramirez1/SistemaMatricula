@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sistema de Matrícula</title>
+<script src="/js/api.js"></script>
+<script>
+  const session = SM.getSession();
+  window.location.replace(session?.token ? SM.rutaDashboardPorRol(session) : "/login.html");
+</script>
+</head>
+<body></body>
+</html>

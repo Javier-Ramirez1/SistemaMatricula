@@ -39,7 +39,13 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/login", "/api/auth/login",
                                 "/css/**", "/js/**", "/img/**", "/icons/**",
-                                "/plugins/**", "/vendor/**", "/error"
+                                "/plugins/**", "/vendor/**", "/error",
+                                // Frontend estático: la seguridad real vive en la API (JWT),
+                                // no en el acceso a estos archivos HTML/JS — el guard.js de
+                                // cada dashboard valida sesión+rol en el cliente antes de
+                                // pedir datos, y la API rechaza igual sin un JWT válido.
+                                "/", "/index.html", "/login.html", "/favicon.ico",
+                                "/superusuario/**", "/director/**", "/secretaria/**"
                         ).permitAll()
 
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()

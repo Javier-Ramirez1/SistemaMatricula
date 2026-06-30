@@ -1,4 +1,20 @@
 package pe.edu.unjfsc.sistemamatricula.security;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+/**
+ * Bean del encriptador de contraseñas (BCrypt).
+ * Usado por UsuarioService al crear/cambiar contraseña y por
+ * UserDetailsServiceImpl al validar el login.
+ */
+@Configuration
 public class PasswordEncoderConfig {
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 }

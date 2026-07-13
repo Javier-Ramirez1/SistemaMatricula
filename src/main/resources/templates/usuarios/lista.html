@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Administración de Usuarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/css/custom.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2'><path d='M22 10v6M2 10l10-5 10 5-10 5z'/><path d='M6 12v5c0 2 2 3 6 3s6-1 6-3v-5'/></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <!-- Overlay de Sidebar en móviles -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Header superior responsivo -->
+    <header class="app-header">
+        <div class="d-flex align-items-center gap-2">
+            <button class="header-toggle-btn" id="sidebarToggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" x2="20" y1="12" y2="12"></line>
+                    <line x1="4" x2="20" y1="6" y2="6"></line>
+                    <line x1="4" x2="20" y1="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="d-flex align-items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.5" style="width: 24px; height: 24px; min-width: 24px;" class="d-lg-none">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                    <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+                </svg>
+                <span class="fw-bold text-dark text-uppercase small tracking-widest d-lg-none" style="font-size: 0.8rem;">Matrícula App</span>
+                <span class="fw-bold text-secondary text-uppercase small tracking-widest d-none d-lg-inline" style="font-size: 0.75rem; letter-spacing: 0.05em;">SISTEMA DE CONTROL DE MATRÍCULAS Y CUENTAS</span>
+            </div>
+        </div>
+
+        <div class="header-profile">
+            <button class="header-btn-lock" title="Cambiar Contraseña" data-bs-toggle="modal" data-bs-target="#modalCambiarPassword">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </button>
+            <div class="header-profile-info d-none d-sm-block">
+                <p class="header-profile-name" th:text="${#authentication.principal.nombreCompleto}">Ariana Ross</p>
+                <p class="header-profile-role" th:text="${#authentication.principal.rolNombre}">SUPERUSUARIO</p>
+            </div>
+            <div class="header-avatar" th:text="${#strings.substring(#authentication.principal.nombreCompleto, 0, 2).toUpperCase()}">
+                US
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar Izquierdo -->
+    <div class="sidebar">
+        <div>
+            <h3 class="fw-bold mb-4 text-dark text-center d-flex align-items-center justify-content-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" style="width: 24px; height: 24px; min-width: 24px;">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                    <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+                </svg>
+                <span>Matrícula App</span>
+            </h3>
+            <hr>
+            <nav class="mt-4">
+                <a href="/" class="nav-link-custom d-flex align-items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    <span>Panel Principal</span>
+                </a>
+                <a href="/anios" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Conceptos de Pago', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Años Académicos</span>
+                </a>
+                <a href="/aulas" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Aulas y Secciones', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <span>Aulas y Secciones</span>
+                </a>
+                <a href="/conceptos" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Conceptos de Pago', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><line x1="12" y1="4" x2="12" y2="20"></line></svg>
+                    <span>Conceptos de Pago</span>
+                </a>
+                <a href="/alumnos" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Alumnos', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span>Alumnos</span>
+                </a>
+                <a href="/matriculas" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Matriculas', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>Matrículas</span>
+                </a>
+                <a href="/pagos/deudas" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Cuentas y Pagos', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span>Cuentas y Pagos</span>
+                </a>
+                <a href="/reportes/dashboard" class="nav-link-custom d-flex align-items-center gap-2" sec:authorize="hasAnyRole('SUPERUSUARIO', 'DIRECTOR')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <span>Reportes</span>
+                </a>
+                <a href="/usuarios" class="nav-link-custom active d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Usuarios', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span>Roles y Usuarios</span>
+                </a>
+            </nav>
+        </div>
+        <div>
+            <hr>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-pill">Cerrar Sesión</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold tracking-tight">Administración de Usuarios</h1>
+                <p class="text-muted">Crea cuentas de acceso y gestiona sus roles en el sistema.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button onclick="exportTableToExcel('tablaUsuarios', 'reporte_usuarios')" class="btn btn-outline-success">Excel</button>
+                <button onclick="exportTableToPDF('tablaUsuarios', 'reporte_usuarios')" class="btn btn-outline-danger">PDF</button>
+                <a href="/roles" class="btn btn-outline-primary">Gestionar Roles</a>
+                <button class="btn btn-custom" data-bs-toggle="modal" data-bs-target="#modalNuevoUsuario">+ Nuevo Usuario</button>
+            </div>
+        </div>
+
+
+
+        <div class="card-container">
+            <div class="table-responsive">
+                <table class="table align-middle" id="tablaUsuarios">
+                    <thead>
+                        <tr>
+                            <th class="d-none d-sm-table-cell">ID</th>
+                            <th>Usuario</th>
+                            <th>Nombre Completo</th>
+                            <th class="d-none d-sm-table-cell">Celular</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th class="d-none d-md-table-cell">Fecha Creación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${usuarios}">
+                            <td class="fw-semibold d-none d-sm-table-cell" th:text="${u.idUsuario}">1</td>
+                            <td class="fw-medium" th:text="${u.username}">admin</td>
+                            <td th:text="${u.persona.apellidoPaterno + ' ' + u.persona.apellidoMaterno + ', ' + u.persona.nombres}">Pérez, Juan</td>
+                            <td class="d-none d-sm-table-cell" th:text="${u.persona.celular != null ? u.persona.celular : '-'}">999999999</td>
+                            <td th:text="${u.rol.nombreRol}">SUPERUSUARIO</td>
+                            <td>
+                                <span class="badge-active" th:text="${u.estado ? 'Activo' : 'Inactivo'}" th:style="${u.estado ? 'background-color:#dcfce7;color:#15803d;' : 'background-color:#fee2e2;color:#991b1b;'}">Activo</span>
+                            </td>
+                            <td class="d-none d-md-table-cell" th:text="${#temporals.format(u.fechaRegistro, 'dd/MM/yyyy HH:mm')}">11/07/2026</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a th:href="@{/usuarios/editar/{id}(id=${u.idUsuario})}" class="btn btn-sm btn-outline-primary py-1 px-2">Editar</a>
+                                    <a th:if="${u.estado}" th:href="@{/usuarios/eliminar/{id}(id=${u.idUsuario})}" class="btn btn-sm btn-outline-danger py-1 px-2" onclick="return confirm('¿Está seguro de desactivar este usuario?')">Eliminar</a>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function exportTableToExcel(tableID, filename = 'reporte') {
+            var table = document.getElementById(tableID);
+            if (!table) return;
+            var csv = [];
+            var rows = table.querySelectorAll("tr");
+            for (var i = 0; i < rows.length; i++) {
+                var row = [], cols = rows[i].querySelectorAll("td, th");
+                var limit = cols.length;
+                if (cols.length > 1 && (cols[cols.length-1].innerText.toLowerCase().includes("acción") || 
+                                        cols[cols.length-1].innerText.toLowerCase().includes("operación") ||
+                                        cols[cols.length-1].innerText.toLowerCase().includes("acciones") ||
+                                        rows[i].querySelector("td:last-child a, td:last-child button"))) {
+                    limit = cols.length - 1;
+                }
+                for (var j = 0; j < limit; j++) {
+                    var data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").replace(/"/g, '""');
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(";"));
+            }
+            var csvString = csv.join("\n");
+            var blob = new Blob(["\ufeff" + csvString], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement("a");
+            if (link.download !== undefined) {
+                var url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename + ".csv");
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function exportTableToPDF(tableID, filename) {
+            var table = document.getElementById(tableID);
+            if (!table) return;
+            var element = table.cloneNode(true);
+            var actionHeaders = element.querySelectorAll("th:last-child, td:last-child");
+            actionHeaders.forEach(el => el.remove());
+            
+            var container = document.createElement("div");
+            container.style.padding = "20px";
+            container.style.fontFamily = "Inter, sans-serif";
+            
+            var title = document.createElement("h2");
+            title.innerText = filename.replace(/_/g, ' ').toUpperCase();
+            title.style.marginBottom = "20px";
+            title.style.textAlign = "center";
+            title.style.fontWeight = "bold";
+            title.style.color = "#1e293b";
+            container.appendChild(title);
+            
+            element.style.width = "100%";
+            element.style.borderCollapse = "collapse";
+            element.querySelectorAll("th, td").forEach(cell => {
+                cell.style.border = "1px solid #e2e8f0";
+                cell.style.padding = "10px";
+                cell.style.fontSize = "12px";
+            });
+            container.appendChild(element);
+            
+            var opt = {
+                margin:       10,
+                filename:     filename + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(container).save();
+        }
+    </script>
+    <!-- Modal Cambiar Contraseña -->
+    <div class="modal fade" id="modalCambiarPassword" tabindex="-1" aria-labelledby="modalCambiarPasswordLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 14px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalCambiarPasswordLabel">Seguridad de la Cuenta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formCambiarPassword">
+                    <div class="modal-body py-4">
+                        <p class="text-muted small mb-4">Actualiza tu contraseña para asegurar tu acceso al sistema.</p>
+                        
+                        <div id="alertCambiarPassword" class="alert d-none small" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label for="modalPasswordActual" class="form-label small fw-semibold text-muted">Contraseña Actual</label>
+                            <input type="password" class="form-control" id="modalPasswordActual" name="passwordActual" required autocomplete="current-password">
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalPasswordNueva" class="form-label small fw-semibold text-muted">Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="modalPasswordNueva" name="passwordNueva" required autocomplete="new-password">
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalPasswordConfirmacion" class="form-label small fw-semibold text-muted">Confirmar Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="modalPasswordConfirmacion" name="passwordConfirmacion" required autocomplete="new-password">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-light rounded-pill" data-bs-dismiss="modal" style="font-size: 0.85rem; font-weight: 600;">Cancelar</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4" style="background-color: #4f46e5; border: none; font-size: 0.85rem; font-weight: 600;">Actualizar Contraseña</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const sidebar = document.querySelector(".sidebar");
+            const sidebarToggle = document.getElementById("sidebarToggle");
+            const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                sidebarToggle.addEventListener("click", function() {
+                    sidebar.classList.toggle("show-sidebar");
+                    sidebarOverlay.classList.toggle("show-overlay");
+                });
+
+                sidebarOverlay.addEventListener("click", function() {
+                    sidebar.classList.remove("show-sidebar");
+                    sidebarOverlay.classList.remove("show-overlay");
+                });
+            }
+
+            // Cambiar contraseña AJAX
+            const formPass = document.getElementById("formCambiarPassword");
+            const alertPass = document.getElementById("alertCambiarPassword");
+
+            if (formPass) {
+                formPass.addEventListener("submit", function(e) {
+                    e.preventDefault();
+                    alertPass.className = "alert d-none small";
+
+                    const formData = new FormData(formPass);
+
+                    fetch("/api/usuarios/cambiar-password", {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Mostrar SweetAlert si hay parámetros success/error en la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('success')) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: 'Operación realizada con éxito.',
+                confirmButtonColor: '#4f46e5'
+            });
+        }
+        if (urlParams.has('error')) {
+            Swal.fire({
+                icon: 'error',
+                title: '¡Error!',
+                text: urlParams.get('error'),
+                confirmButtonColor: '#4f46e5'
+            });
+        }
+
+        // Script de cambio de password adaptado
+        document.addEventListener("DOMContentLoaded", () => {
+            const formPass = document.getElementById("formCambiarPassword");
+            if (formPass) {
+                formPass.addEventListener("submit", (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(formPass);
+                    fetch("/password/cambiar", {
+                        method: "POST",
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Contraseña Actualizada',
+                                text: data.message,
+                                confirmButtonColor: '#4f46e5'
+                            }).then(() => {
+                                const modalEl = document.getElementById('modalCambiarPassword');
+                                const modal = bootstrap.Modal.getInstance(modalEl);
+                                if (modal) modal.hide();
+                                formPass.reset();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message,
+                                confirmButtonColor: '#4f46e5'
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Error de red al intentar actualizar la contraseña.',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                    });
+                });
+            }
+        });
+        /*]]>*/
+    </script>
+        <!-- Modal Registrar Nuevo Usuario -->
+        <div class="modal fade" id="modalNuevoUsuario" tabindex="-1" aria-labelledby="modalNuevoUsuarioLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 14px;">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h5 class="modal-title fw-bold text-dark" id="modalNuevoUsuarioLabel" style="font-size: 1.25rem;">Registrar Nuevo Usuario</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form th:action="@{/usuarios/nuevo}" method="post">
+                        <div class="modal-body py-3">
+                            <h6 class="fw-bold text-indigo mb-3" style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">1. Datos Personales</h6>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="nombres" class="form-label small fw-semibold text-muted">Nombres</label>
+                                    <input type="text" class="form-control" id="nombres" name="nombres" placeholder="Ej. Juan Carlos" required autocomplete="off">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="apellidoPaterno" class="form-label small fw-semibold text-muted">Apellido Paterno</label>
+                                    <input type="text" class="form-control" id="apellidoPaterno" name="apellidoPaterno" placeholder="Ej. Pérez" required autocomplete="off">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="apellidoMaterno" class="form-label small fw-semibold text-muted">Apellido Materno</label>
+                                    <input type="text" class="form-control" id="apellidoMaterno" name="apellidoMaterno" placeholder="Ej. Gómez" required autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="numeroDocumento" class="form-label small fw-semibold text-muted">DNI (8 dígitos)</label>
+                                    <input type="text" class="form-control" id="numeroDocumento" name="numeroDocumento" placeholder="DNI exacto" required pattern="[0-9]{8}" maxlength="8" title="Debe contener exactamente 8 dígitos numéricos." autocomplete="off">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="celular" class="form-label small fw-semibold text-muted">Celular (9 dígitos)</label>
+                                    <input type="text" class="form-control" id="celular" name="celular" placeholder="9 caracteres" required pattern="[0-9]{9}" maxlength="9" title="Debe tener exactamente 9 dígitos." autocomplete="off">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="correoElectronico" class="form-label small fw-semibold text-muted">Correo Electrónico</label>
+                                    <input type="email" class="form-control" id="correoElectronico" name="correoElectronico" placeholder="usuario@ejemplo.com" required autocomplete="off">
+                                </div>
+                            </div>
+
+                            <h6 class="fw-bold text-indigo mt-3 mb-3" style="font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">2. Credenciales y Rol de Acceso</h6>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="username" class="form-label small fw-semibold text-muted">Usuario</label>
+                                    <input type="text" class="form-control" id="username" name="username" placeholder="Nombre de usuario" required autocomplete="off">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="password" class="form-label small fw-semibold text-muted">Contraseña</label>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña de acceso" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="idRol" class="form-label small fw-semibold text-muted">Rol del Sistema</label>
+                                    <select class="form-select" id="idRol" name="idRol" required style="padding: 0.65rem 0.8rem; border-radius: 8px;">
+                                        <option value="" disabled selected>Selecciona un rol...</option>
+                                        <option th:each="r : ${roles}" th:value="${r.idRol}" th:text="${r.nombreRol}">ADMIN</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top-0 pt-0">
+                            <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-custom rounded-pill px-4" style="background-color: #4f46e5; color: white; border: none;">Registrar Usuario</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

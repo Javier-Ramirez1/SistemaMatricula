@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Alumno</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            min-height: 100vh;
+        }
+        .sidebar {
+            background-color: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            min-height: 100vh;
+            width: 260px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 2rem 1.5rem;
+            box-shadow: 1px 0 3px 0 rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .main-content {
+            margin-left: 260px;
+            padding: 3rem;
+        }
+        .nav-link-custom {
+            color: #475569;
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .nav-link-custom:hover, .nav-link-custom.active {
+            background-color: #f1f5f9;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        .form-container {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .form-control, .form-select {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
+            border-radius: 8px;
+            padding: 0.65rem 0.8rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
+        }
+        .btn-custom {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.7rem 1.5rem;
+            font-weight: 600;
+        }
+        .btn-custom:hover {
+            background-color: #4338ca;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+<!-- Sidebar Izquierdo -->
+<div class="sidebar">
+    <div>
+        <h3 class="fw-bold mb-4 text-dark text-center">Matrícula App</h3>
+        <hr>
+        <nav class="mt-4">
+            <a href="/" class="nav-link-custom">Panel Principal</a>
+            <a href="/matriculas" class="nav-link-custom">Matrículas</a>
+            <a href="/pagos/deudas" class="nav-link-custom">Cuentas y Pagos</a>
+            <a href="/alumnos" class="nav-link-custom active">Alumnos</a>
+            <a href="/aulas" class="nav-link-custom">Aulas y Secciones</a>
+            <a href="/conceptos" class="nav-link-custom">Conceptos de Pago</a>
+            <a href="/usuarios" class="nav-link-custom" sec:authorize="hasRole('SUPERUSUARIO')">Administración</a>
+        </nav>
+    </div>
+    <div>
+        <hr>
+        <div class="mb-3 px-2">
+            <div class="fw-bold text-dark text-uppercase small" style="letter-spacing: 0.05em;" th:text="${#authentication.principal.nombreCompleto}">Administrador</div>
+            <div class="text-muted small" th:text="${#authentication.principal.rolNombre}">SUPERUSUARIO</div>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-pill">Cerrar Sesión</button>
+        </form>
+    </div>
+</div>
+
+<!-- Contenido Principal -->
+<div class="main-content">
+    <div class="mb-4">
+        <h1 class="fw-bold">Editar Alumno</h1>
+        <p class="text-muted">Modifica la información personal del estudiante y apoderado.</p>
+    </div>
+
+    <div class="form-container">
+        <form th:action="@{/alumnos/editar/{id}(id=${alumno.codAlumno})}" method="post">
+            <h5 class="fw-bold text-indigo mb-3">1. Datos del Alumno</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="nombres" class="form-label small fw-semibold text-muted">Nombres</label>
+                    <input type="text" class="form-control" id="nombres" name="nombres" th:value="${alumno.persona.nombres}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="apellidoPaterno" class="form-label small fw-semibold text-muted">Apellido Paterno</label>
+                    <input type="text" class="form-control" id="apellidoPaterno" name="apellidoPaterno" th:value="${alumno.persona.apellidoPaterno}" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="apellidoMaterno" class="form-label small fw-semibold text-muted">Apellido Materno</label>
+                    <input type="text" class="form-control" id="apellidoMaterno" name="apellidoMaterno" th:value="${alumno.persona.apellidoMaterno}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="fechaNacimiento" class="form-label small fw-semibold text-muted">Fecha de Nacimiento</label>
+                    <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento" th:value="${alumno.persona.fechaNacimiento}" required>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <label for="codTipoDocumento" class="form-label small fw-semibold text-muted">Tipo Documento</label>
+                    <select class="form-select" id="codTipoDocumento" name="codTipoDocumento" required>
+                        <option th:each="t : ${tiposDoc}" th:value="${t.codTipoDocumento}" th:text="${t.descripcion}" th:selected="${t.codTipoDocumento == alumno.persona.tipoDocumento.codTipoDocumento}"></option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="numeroDocumento" class="form-label small fw-semibold text-muted">N° Documento</label>
+                    <input type="text" class="form-control" id="numeroDocumento" name="numeroDocumento" th:value="${alumno.persona.numeroDocumento}" pattern="[0-9]{8}" maxlength="8" title="El documento DNI debe contener exactamente 8 dígitos numéricos" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="celular" class="form-label small fw-semibold text-muted">Celular Alumno</label>
+                    <input type="text" class="form-control" id="celular" name="celular" th:value="${alumno.persona.celular}" pattern="[0-9]{9}" maxlength="9" title="El número de celular debe contener exactamente 9 dígitos numéricos">
+                </div>
+            </div>
+
+            <h5 class="fw-bold text-indigo mb-3 mt-4">2. Datos de Contacto y Apoderado</h5>
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3">
+                    <label for="nombreApoderado" class="form-label small fw-semibold text-muted">Nombre del Apoderado</label>
+                    <input type="text" class="form-control" id="nombreApoderado" name="nombreApoderado" th:value="${alumno.nombreApoderado}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="celularApoderado" class="form-label small fw-semibold text-muted">Celular del Apoderado</label>
+                    <input type="text" class="form-control" id="celularApoderado" name="celularApoderado" th:value="${alumno.celularApoderado}" pattern="[0-9]{9}" maxlength="9" title="El número de celular debe contener exactamente 9 dígitos numéricos" required>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <label for="correoElectronico" class="form-label small fw-semibold text-muted">Correo Electrónico</label>
+                    <input type="email" class="form-control" id="correoElectronico" name="correoElectronico" th:value="${alumno.persona.correoElectronico}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="direccion" class="form-label small fw-semibold text-muted">Dirección de Residencia</label>
+                    <input type="text" class="form-control" id="direccion" name="direccion" th:value="${alumno.persona.direccion}">
+                </div>
+            </div>
+
+            <div class="d-flex gap-3 justify-content-end mt-4">
+                <a href="/alumnos" class="btn btn-outline-secondary px-4">Regresar</a>
+                <button type="submit" class="btn btn-custom px-4">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const errorMsg = /*[[${error}]]*/ null;
+    const successMsg = /*[[${success}]]*/ null;
+    if (errorMsg) {
+        Swal.fire({
+            icon: 'error',
+            title: '¡Error!',
+            text: errorMsg,
+            confirmButtonColor: '#4f46e5'
+        });
+    }
+    if (successMsg) {
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: successMsg,
+            confirmButtonColor: '#4f46e5'
+        });
+    }
+    /*]]>*/
+</script>
+</body>
+</html>

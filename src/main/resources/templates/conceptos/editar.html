@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Concepto de Pago</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2'><path d='M22 10v6M2 10l10-5 10 5-10 5z'/><path d='M6 12v5c0 2 2 3 6 3s6-1 6-3v-5'/></svg>">
+    <link href="/css/custom.css" rel="stylesheet">
+</head>
+<body>
+<!-- Sidebar Izquierdo -->
+<div class="sidebar">
+    <div>
+        <h3 class="fw-bold mb-4 text-dark text-center">Matrícula App</h3>
+        <hr>
+        <nav class="mt-4">
+            <a href="/" class="nav-link-custom">Panel Principal</a>
+            <a href="/matriculas" class="nav-link-custom" th:if="${@securityService.tienePermiso('Matriculas', 'VER')}">Matrículas</a>
+            <a href="/pagos/deudas" class="nav-link-custom" th:if="${@securityService.tienePermiso('Cuentas y Pagos', 'VER')}">Cuentas y Pagos</a>
+            <a href="/alumnos" class="nav-link-custom" th:if="${@securityService.tienePermiso('Alumnos', 'VER')}">Alumnos</a>
+            <a href="/aulas" class="nav-link-custom" th:if="${@securityService.tienePermiso('Aulas y Secciones', 'VER')}">Aulas y Secciones</a>
+            <a href="/conceptos" class="nav-link-custom active" th:if="${@securityService.tienePermiso('Conceptos de Pago', 'VER')}">Conceptos de Pago</a>
+            <a href="/usuarios" class="nav-link-custom" th:if="${@securityService.tienePermiso('Usuarios', 'VER')}">Administración</a>
+            <a href="/cambiar-password" class="nav-link-custom">Cambiar Contraseña</a>
+        </nav>
+    </div>
+    <div>
+        <hr>
+        <div class="mb-3 px-2">
+            <div class="fw-bold text-dark text-uppercase small" style="letter-spacing: 0.05em;" th:text="${#authentication.principal.nombreCompleto}">Administrador</div>
+            <div class="text-muted small" th:text="${#authentication.principal.rolNombre}">SUPERUSUARIO</div>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-pill">Cerrar Sesión</button>
+        </form>
+    </div>
+</div>
+
+<!-- Contenido Principal -->
+<div class="main-content">
+    <div class="mb-4 text-center">
+        <h1 class="fw-bold tracking-tight">Editar Concepto de Pago</h1>
+        <p class="text-muted">Modifica los detalles del concepto y su concurrencia optimista.</p>
+    </div>
+
+    <div class="form-container">
+        <div th:if="${error}" class="alert alert-danger text-center p-2 mb-3" style="background-color: #fef2f2; border-color: #fee2e2; color: #991b1b;" th:text="${error}">
+            Error
+        </div>
+
+        <form th:action="@{/conceptos/editar}" method="post" th:object="${concepto}">
+            <!-- Campos ocultos de Control de Concurrencia y Primary Key -->
+            <input type="hidden" th:field="*{codConcepto}">
+            <input type="hidden" th:field="*{version}">
+
+            <div class="mb-3">
+                <label for="codAnioAcademico" class="form-label small fw-semibold text-muted">Año Académico</label>
+                <select class="form-select" id="codAnioAcademico" name="codAnioAcademico" required>
+                    <option th:each="a : ${anios}" th:value="${a.codAnioAcademico}" th:text="${a.anio}" th:selected="${a.codAnioAcademico == concepto.anioAcademico.codAnioAcademico}"></option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="codTipoConcepto" class="form-label small fw-semibold text-muted">Tipo de Concepto</label>
+                <select class="form-select" id="codTipoConcepto" name="codTipoConcepto" required>
+                    <option th:each="tc : ${tiposConcepto}" th:value="${tc.codTipoConcepto}" th:text="${tc.descripcion}" th:selected="${tc.codTipoConcepto == concepto.tipoConcepto.codTipoConcepto}"></option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="nombreConcepto" class="form-label small fw-semibold text-muted">Nombre del Concepto</label>
+                <input type="text" class="form-control" id="nombreConcepto" th:field="*{nombreConcepto}" required autocomplete="off">
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="monto" class="form-label small fw-semibold text-muted">Monto (S/)</label>
+                    <input type="number" step="0.01" class="form-control" id="monto" th:field="*{monto}" required min="0.01">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="ordenPago" class="form-label small fw-semibold text-muted">Orden de Pago</label>
+                    <input type="number" class="form-control" id="ordenPago" th:field="*{ordenPago}" required min="1">
+                </div>
+            </div>
+            <div class="mb-4 form-check">
+                <input type="checkbox" class="form-check-input" id="obligatorio" th:field="*{obligatorio}">
+                <label class="form-check-label small fw-semibold text-muted" for="obligatorio">Concepto Obligatorio</label>
+            </div>
+
+            <div class="d-flex gap-3 justify-content-end mt-4">
+                <a href="/conceptos" class="btn btn-outline-secondary px-4">Regresar</a>
+                <button type="submit" class="btn btn-custom px-4">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

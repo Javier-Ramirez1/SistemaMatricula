@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Nueva Matrícula</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/css/custom.css" rel="stylesheet">
+
+    <style>
+        #alumnoDisplay{ cursor:pointer; background:#fff; }
+        #alumnoDisplay:hover{ border-color:#adb5bd; }
+        .lupa-icon{ color:#6c757d; }
+
+        #listaAlumnos .list-group-item{
+            border-left:none; border-right:none;
+            padding:0.85rem 0.25rem;
+        }
+        #listaAlumnos .list-group-item:hover{ background:#f8f9fa; }
+        #listaAlumnos .doc-num{ font-family:monospace; font-size:0.82rem; }
+        #listaAlumnos .list-group-item.d-none{ display:none !important; }
+
+        .btn-modo-modal.active{
+            background:#343a40; color:#fff; border-color:#343a40;
+        }
+    </style>
+</head>
+<body>
+<!-- Sidebar Izquierdo -->
+<div class="sidebar">
+    <div>
+        <h3 class="fw-bold mb-4 text-dark text-center">Matrícula App</h3>
+        <hr>
+        <nav class="mt-4">
+            <a href="/" class="nav-link-custom">Panel Principal</a>
+            <a href="/matriculas" class="nav-link-custom active">Matrículas</a>
+            <a href="/pagos/deudas" class="nav-link-custom">Cuentas y Pagos</a>
+            <a href="/alumnos" class="nav-link-custom">Alumnos</a>
+            <a href="/aulas" class="nav-link-custom">Aulas y Secciones</a>
+            <a href="/conceptos" class="nav-link-custom">Conceptos de Pago</a>
+            <a href="/usuarios" class="nav-link-custom" sec:authorize="hasRole('SUPERUSUARIO')">Administración</a>
+            <a href="/cambiar-password" class="nav-link-custom">Cambiar Contraseña</a>
+        </nav>
+    </div>
+    <div>
+        <hr>
+        <div class="mb-3 px-2">
+            <div class="fw-bold text-dark text-uppercase small" style="letter-spacing: 0.05em;" th:text="${#authentication.principal.nombreCompleto}">Administrador</div>
+            <div class="text-muted small" th:text="${#authentication.principal.rolNombre}">SUPERUSUARIO</div>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-pill">Cerrar Sesión</button>
+        </form>
+    </div>
+</div>
+
+<!-- Contenido Principal -->
+<div class="main-content">
+    <div class="mb-4">
+        <h1 class="fw-bold">Nueva Matrícula</h1>
+        <p class="text-muted">Asigna a un alumno a una sección y aula para el año académico vigente.</p>
+    </div>
+
+    <div class="form-container">
+        <div th:if="${error}" class="alert alert-danger text-center p-3 mb-4" th:text="${error}">
+            Mensaje de error
+        </div>
+
+        <form th:action="@{/matriculas/nuevo}" method="post">
+
+            <!-- Selección de Alumno: input que abre el modal -->
+            <div class="mb-4">
+                <label class="form-label small fw-semibold text-muted">Buscar Alumno</label>
+                <div class="input-group" data-bs-toggle="modal" data-bs-target="#modalAlumno">
+                        <span class="input-group-text bg-white lupa-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </span>
+                    <input type="text" id="alumnoDisplay" class="form-control" placeholder="Clic para buscar un alumno..." readonly>
+                </div>
+                <input type="hidden" id="codAlumno" name="codAlumno" required>
+            </div>
+
+            <!-- Filtro de Nivel -->
+            <div class="mb-4">
+                <label for="filtroNivel" class="form-label small fw-semibold text-muted">Filtrar Aulas por Nivel</label>
+                <select class="form-select" id="filtroNivel">
+                    <option value="">-- Todos los Niveles --</option>
+                    <option value="Inicial">Inicial</option>
+                    <option value="Primaria">Primaria</option>
+                    <option value="Secundaria">Secundaria</option>
+                </select>
+            </div>
+
+            <!-- Selección de Aula -->
+            <div class="mb-4">
+                <label for="codAula" class="form-label small fw-semibold text-muted">Seleccionar Aula y Sección</label>
+                <select class="form-select" id="codAula" name="codAula" required>
+                    <option value="" disabled selected>Elija un Aula...</option>
+                    <option th:each="au : ${aulas}" th:value="${au.codAula}"
+                            th:data-nivel="${au.nivel.nombreNivel}"
+                            th:text="${au.grado.nombreGrado + ' - ' + au.nivel.nombreNivel + ' | Sección: ' + au.seccion + ' (Vacantes: ' + au.vacantesDisponibles + ')'}"></option>
+                </select>
+            </div>
+
+            <!-- Botón de Envío -->
+            <div class="d-flex gap-3 justify-content-end mt-5">
+                <a href="/matriculas" class="btn btn-outline-secondary px-4">Regresar</a>
+                <button type="submit" class="btn btn-custom px-4">Registrar Matrícula</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Seleccionar Alumno -->
+<div class="modal fade" id="modalAlumno" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Seleccionar Alumno</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="btn-group btn-group-sm mb-3" role="group">
+                    <button type="button" class="btn btn-outline-secondary btn-modo-modal active" data-modo="nombre">Por Nombre</button>
+                    <button type="button" class="btn btn-outline-secondary btn-modo-modal" data-modo="doc">Por N° Documento</button>
+                </div>
+
+                <input type="text" id="buscarAlumnoModal" class="form-control mb-3" placeholder="Escribe para filtrar...">
+
+                <div class="list-group" id="listaAlumnos" style="max-height: 360px; overflow-y: auto;">
+                    <div class="list-group-item d-flex justify-content-between align-items-center"
+                         th:each="a : ${alumnos}"
+                         th:attr="data-nombre=${a.persona.apellidoPaterno + ' ' + a.persona.apellidoMaterno + ' ' + a.persona.nombres},
+                                      data-doc=${a.persona.numeroDocumento},
+                                      data-cod=${a.codAlumno},
+                                      data-texto=${a.persona.apellidoPaterno + ' ' + a.persona.apellidoMaterno + ', ' + a.persona.nombres + ' (Doc: ' + a.persona.numeroDocumento + ')'}">
+                        <div>
+                            <div class="fw-semibold" th:text="${a.persona.apellidoPaterno + ' ' + a.persona.apellidoMaterno + ', ' + a.persona.nombres}"></div>
+                            <div class="text-muted doc-num">Doc: <span th:text="${a.persona.numeroDocumento}"></span></div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-custom btn-seleccionar">Seleccionar</button>
+                    </div>
+
+                    <div id="sinResultados" class="text-center text-muted py-4 d-none">
+                        No se encontraron alumnos con ese criterio.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const modalAlumno = new bootstrap.Modal(document.getElementById("modalAlumno"));
+        const listaAlumnos = document.getElementById("listaAlumnos");
+        const items = Array.from(listaAlumnos.querySelectorAll(".list-group-item"));
+        const sinResultados = document.getElementById("sinResultados");
+        const buscarInput = document.getElementById("buscarAlumnoModal");
+        const modoBotones = document.querySelectorAll(".btn-modo-modal");
+
+        let modoActual = "nombre";
+
+        // Al abrir el modal: limpiar filtro y enfocar el input de búsqueda
+        document.getElementById("modalAlumno").addEventListener("shown.bs.modal", function() {
+            buscarInput.value = "";
+            filtrar();
+            buscarInput.focus();
+        });
+
+        function filtrar() {
+            const texto = buscarInput.value.trim().toLowerCase();
+            let visibles = 0;
+
+            items.forEach(item => {
+                const campo = modoActual === "doc" ? item.dataset.doc : item.dataset.nombre;
+                const coincide = campo.toLowerCase().includes(texto);
+                item.classList.toggle("d-none", !coincide);
+                if (coincide) visibles++;
+            });
+
+            sinResultados.classList.toggle("d-none", visibles > 0);
+        }
+
+        buscarInput.addEventListener("input", filtrar);
+
+        modoBotones.forEach(btn => {
+            btn.addEventListener("click", function() {
+                modoBotones.forEach(b => b.classList.remove("active"));
+                this.classList.add("active");
+                modoActual = this.dataset.modo;
+                buscarInput.placeholder = modoActual === "doc"
+                    ? "Escribe el N° de documento..."
+                    : "Escribe el nombre o apellido...";
+                filtrar();
+            });
+        });
+
+        // Selección de un alumno de la lista
+        listaAlumnos.addEventListener("click", function(e) {
+            const boton = e.target.closest(".btn-seleccionar");
+            if (!boton) return;
+
+            const item = boton.closest(".list-group-item");
+            document.getElementById("codAlumno").value = item.dataset.cod;
+            document.getElementById("alumnoDisplay").value = item.dataset.texto;
+
+            modalAlumno.hide();
+        });
+
+        // Filtro de nivel para el Aula (sin cambios)
+        const filtroNivel = document.getElementById("filtroNivel");
+        const codAula = document.getElementById("codAula");
+        const originalOptions = Array.from(codAula.options);
+
+        filtroNivel.addEventListener("change", function() {
+            const seleccion = this.value;
+            codAula.innerHTML = "";
+            originalOptions.forEach(opt => {
+                const nivel = opt.getAttribute("data-nivel");
+                if (opt.value === "" || seleccion === "" || nivel === seleccion) {
+                    codAula.appendChild(opt);
+                }
+            });
+            codAula.selectedIndex = 0;
+        });
+    });
+</script>
+</body>
+</html>

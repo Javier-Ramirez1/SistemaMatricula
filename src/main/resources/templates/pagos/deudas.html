@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Control de Deudas y Pagos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <link href="/css/custom.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2'><path d='M22 10v6M2 10l10-5 10 5-10 5z'/><path d='M6 12v5c0 2 2 3 6 3s6-1 6-3v-5'/></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+
+<body>
+    <!-- Overlay de Sidebar en móviles -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Header superior responsivo -->
+    <header class="app-header">
+        <div class="d-flex align-items-center gap-2">
+            <button class="header-toggle-btn" id="sidebarToggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" x2="20" y1="12" y2="12"></line>
+                    <line x1="4" x2="20" y1="6" y2="6"></line>
+                    <line x1="4" x2="20" y1="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="d-flex align-items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.5" style="width: 24px; height: 24px; min-width: 24px;" class="d-lg-none">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                    <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+                </svg>
+                <span class="fw-bold text-dark text-uppercase small tracking-widest d-lg-none" style="font-size: 0.8rem;">Matrícula App</span>
+                <span class="fw-bold text-secondary text-uppercase small tracking-widest d-none d-lg-inline" style="font-size: 0.75rem; letter-spacing: 0.05em;">SISTEMA DE CONTROL DE MATRÍCULAS Y CUENTAS</span>
+            </div>
+        </div>
+
+        <div class="header-profile">
+            <a href="/cambiar-password" class="header-btn-lock" title="Cambiar Contraseña">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </a>
+            <div class="header-profile-info d-none d-sm-block">
+                <p class="header-profile-name" th:text="${#authentication.principal.nombreCompleto}">Ariana Ross</p>
+                <p class="header-profile-role" th:text="${#authentication.principal.rolNombre}">SUPERUSUARIO</p>
+            </div>
+            <div class="header-avatar" th:text="${#strings.substring(#authentication.principal.nombreCompleto, 0, 2).toUpperCase()}">
+                US
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar Izquierdo -->
+    <div class="sidebar">
+        <div>
+            <h3 class="fw-bold mb-4 text-dark text-center d-flex align-items-center justify-content-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" style="width: 24px; height: 24px; min-width: 24px;">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                    <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+                </svg>
+                <span>Matrícula App</span>
+            </h3>
+            <hr>
+            <nav class="mt-4">
+                <a href="/" class="nav-link-custom d-flex align-items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                    <span>Panel Principal</span>
+                </a>
+                <a href="/anios" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Conceptos de Pago', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Años Académicos</span>
+                </a>
+                <a href="/aulas" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Aulas y Secciones', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    <span>Aulas y Secciones</span>
+                </a>
+                <a href="/conceptos" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Conceptos de Pago', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect><line x1="12" y1="4" x2="12" y2="20"></line></svg>
+                    <span>Conceptos de Pago</span>
+                </a>
+                <a href="/alumnos" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Alumnos', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span>Alumnos</span>
+                </a>
+                <a href="/matriculas" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Matriculas', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>Matrículas</span>
+                </a>
+                <a href="/pagos/deudas" class="nav-link-custom active d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Cuentas y Pagos', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span>Cuentas y Pagos</span>
+                </a>
+                <a href="/reportes/dashboard" class="nav-link-custom d-flex align-items-center gap-2" sec:authorize="hasAnyRole('SUPERUSUARIO', 'DIRECTOR')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                    <span>Reportes</span>
+                </a>
+                <a href="/usuarios" class="nav-link-custom d-flex align-items-center gap-2" th:if="${@securityService.tienePermiso('Usuarios', 'VER')}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <span>Roles y Usuarios</span>
+                </a>
+            </nav>
+        </div>
+        <div>
+            <hr>
+            <form th:action="@{/logout}" method="post">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100 rounded-pill">Cerrar Sesión</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold tracking-tight">Control de Cuentas y Pagos</h1>
+                <p class="text-muted">Consulta deudas pendientes y realiza el pago de cuotas con validación de secuencia.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button onclick="exportTableToExcel('tablaDeudas', 'reporte_deudas')" class="btn btn-outline-success">Excel</button>
+                <button onclick="exportTableToPDF('tablaDeudas', 'reporte_deudas')" class="btn btn-outline-danger">PDF</button>
+            </div>
+        </div>
+
+        <div th:if="${param.success}" class="alert alert-success alert-dismissible fade show" role="alert"
+            style="background-color: #dcfce7; border-color: #bbf7d0; color: #166534;">
+            Pago registrado correctamente. El comprobante fue generado y el saldo se ha actualizado.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show" role="alert"
+            th:text="${param.error}" style="background-color: #fef2f2; border-color: #fee2e2; color: #991b1b;">
+            Error al procesar el pago.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row g-4">
+            <!-- Selector de Alumno -->
+            <div class="col-lg-4">
+                <div class="card-custom">
+                    <h5 class="fw-bold mb-3">Buscar Alumno</h5>
+                    <form th:action="@{/pagos/deudas}" method="get">
+                        <div class="mb-3">
+                            <label for="codAlumno" class="form-label small text-muted">Buscar Alumno</label>
+                            <select class="form-select" id="codAlumno" name="codAlumno" onchange="this.form.submit()">
+                                <option value="" disabled th:selected="${alumnoSeleccionado == null}">Elija un alumno...
+                                </option>
+                                <option th:each="a : ${alumnos}" th:value="${a.codAlumno}"
+                                    th:text="${a.persona.apellidoPaterno + ' ' + a.persona.apellidoMaterno + ', ' + a.persona.nombres + ' (Doc: ' + a.persona.numeroDocumento + ')'}"
+                                    th:selected="${a.codAlumno == alumnoSeleccionado}"></option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Listado de Deudas -->
+            <div class="col-lg-8">
+                <div class="card-custom">
+                    <h5 class="fw-bold mb-3">Estado de Cuenta / Deudas Pendientes</h5>
+                    <div class="table-responsive" th:if="${deudas != null}">
+                        <table class="table table-hover align-middle" id="tablaDeudas">
+                            <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Orden</th>
+                                    <th>Monto Orig.</th>
+                                    <th>Monto Pend.</th>
+                                    <th sec:authorize="hasAnyRole('SUPERUSUARIO', 'SECRETARIA')">Operación</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="d : ${deudas}">
+                                    <td class="fw-medium" th:text="${d.concepto.nombreConcepto}">Matrícula 2026</td>
+                                    <td th:text="${d.ordenPago}">1</td>
+                                    <td th:text="${'S/ ' + d.montoOriginal}">S/ 200.00</td>
+                                    <td class="fw-bold"
+                                        th:classappend="${d.montoPendiente > 0 ? 'text-danger' : 'text-success'}"
+                                        th:text="${'S/ ' + d.montoPendiente}">S/ 200.00</td>
+                                    <td sec:authorize="hasAnyRole('SUPERUSUARIO', 'SECRETARIA')">
+                                        <!-- Botón para abrir el Modal de Caja de Cobros -->
+                                        <button th:if="${d.montoPendiente > 0}" type="button"
+                                            class="btn btn-custom btn-sm btn-recaudar" th:data-cod-cuota="${d.codCuota}"
+                                            th:data-concepto="${d.concepto.nombreConcepto}"
+                                            th:data-pendiente="${d.montoPendiente}">
+                                            Registrar Pago
+                                        </button>
+                                        <span th:if="${d.montoPendiente == 0}"
+                                            class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded">Pagado</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(deudas)}">
+                                    <td colspan="5" class="text-center text-muted p-4">El alumno no registra deudas
+                                        pendientes de pago.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div th:if="${deudas == null}" class="text-center text-muted p-4">
+                        Por favor, elija un alumno en el panel izquierdo para consultar sus deudas.
+                    </div>
+                </div>
+
+                <!-- Historial de Pagos Realizados -->
+                <div class="card-custom mt-4" th:if="${historial != null}">
+                    <h5 class="fw-bold mb-3 text-success">Historial de Pagos Realizados</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>N° Comprobante</th>
+                                    <th>Concepto</th>
+                                    <th>Monto Pagado</th>
+                                    <th>Fecha Pago</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="p : ${historial}">
+                                    <td class="fw-bold text-dark"
+                                        th:text="${p.serieComprobante + '-' + #numbers.formatInteger(p.numeroComprobante, 6)}">
+                                        R001-000001</td>
+                                    <td th:text="${p.cuota.concepto.nombreConcepto}">Matricula 2026</td>
+                                    <td class="fw-bold text-success" th:text="${'S/ ' + p.montoPagado}">S/ 250.00</td>
+                                    <td th:text="${#temporals.format(p.fechaPago, 'dd/MM/yyyy HH:mm')}">11/07/2026 10:00
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded">Emitido
+                                            / Valido</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(historial)}">
+                                    <td colspan="5" class="text-center text-muted p-3">No se registran pagos realizados
+                                        para este alumno.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Caja de Cobros -->
+    <div class="modal fade" id="modalCobro" tabindex="-1" aria-labelledby="modalCobroLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header bg-success text-white border-0 py-3"
+                    style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                    <h5 class="modal-title fw-bold" id="modalCobroLabel">Caja de Cobranza Escolar</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <form th:action="@{/pagos/registrar}" method="post">
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="modalCodCuota" name="codCuota">
+
+                        <div class="mb-3">
+                            <label class="form-label small text-muted fw-semibold">Concepto de Pago</label>
+                            <input type="text" class="form-control bg-light fw-bold" id="modalConcepto" readonly>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label small text-muted fw-semibold">Saldo Pendiente</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light fw-semibold">S/</span>
+                                    <input type="text" class="form-control bg-light fw-bold text-danger"
+                                        id="modalPendiente" readonly>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <label for="modalMontoPagado" class="form-label small text-muted fw-semibold">Monto a
+                                    Cancelar</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white fw-semibold">S/</span>
+                                    <input type="number" step="0.1" class="form-control fw-bold" id="modalMontoPagado"
+                                        name="montoPagado" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="metodoPago" class="form-label small text-muted fw-semibold">Método de
+                                Pago</label>
+                            <select class="form-select" id="metodoPago" required>
+                                <option value="EFECTIVO">Efectivo (Caja Física)</option>
+                                <option value="DEPOSITO">Depósito / Transferencia Bancaria</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3 d-none" id="divOperacion">
+                            <label for="nroOperacion" class="form-label small text-muted fw-semibold">N° Operación y
+                                Banco</label>
+                            <input type="text" class="form-control" id="nroOperacion"
+                                placeholder="Ej. Depósito BCP #9827361">
+                        </div>
+
+                        <div class="p-3 bg-light rounded-3 mt-4 small text-muted">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Tipo de Comprobante:</span>
+                                <strong class="text-dark">RECIBO DE INGRESO</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Serie:</span>
+                                <strong class="text-dark">R001 (Correlativo Seguro)</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 p-3 bg-light"
+                        style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+                        <button type="button" class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success fw-bold px-4"
+                            style="background-color:#16a34a; border:none;">Confirmar e Imprimir Recibo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Inicializar Tom Select para autocompletado y búsqueda del Alumno
+            const tsAlumno = new TomSelect("#codAlumno", {
+                create: false,
+                placeholder: "Elija un alumno..."
+            });
+            tsAlumno.on("change", function () {
+                const form = document.querySelector("#codAlumno").closest("form");
+                if (form) form.submit();
+            });
+
+            const buttons = document.querySelectorAll(".btn-recaudar");
+            const modalCodCuota = document.getElementById("modalCodCuota");
+            const modalConcepto = document.getElementById("modalConcepto");
+            const modalPendiente = document.getElementById("modalPendiente");
+            const modalMontoPagado = document.getElementById("modalMontoPagado");
+            const metodoPago = document.getElementById("metodoPago");
+            const divOperacion = document.getElementById("divOperacion");
+
+            // Instanciar modal de Bootstrap
+            const myModal = new bootstrap.Modal(document.getElementById('modalCobro'));
+
+            buttons.forEach(button => {
+                button.addEventListener("click", function () {
+                    const codCuota = this.getAttribute("data-cod-cuota");
+                    const concepto = this.getAttribute("data-concepto");
+                    const pendiente = this.getAttribute("data-pendiente");
+
+                    modalCodCuota.value = codCuota;
+                    modalConcepto.value = concepto;
+                    modalPendiente.value = pendiente;
+                    modalMontoPagado.value = pendiente;
+                    modalMontoPagado.setAttribute("max", pendiente);
+
+                    myModal.show();
+                });
+            });
+
+            metodoPago.addEventListener("change", function () {
+                if (this.value === "DEPOSITO" || this.value === "TARJETA") {
+                    divOperacion.classList.remove("d-none");
+                } else {
+                    divOperacion.classList.add("d-none");
+                }
+            });
+        });
+    </script>
+    <script>
+        function exportTableToExcel(tableID, filename = 'reporte') {
+            var table = document.getElementById(tableID);
+            if (!table) return;
+            var csv = [];
+            var rows = table.querySelectorAll("tr");
+            for (var i = 0; i < rows.length; i++) {
+                var row = [], cols = rows[i].querySelectorAll("td, th");
+                var limit = cols.length;
+                if (cols.length > 1 && (cols[cols.length-1].innerText.toLowerCase().includes("acción") || 
+                                        cols[cols.length-1].innerText.toLowerCase().includes("operación") ||
+                                        cols[cols.length-1].innerText.toLowerCase().includes("acciones") ||
+                                        rows[i].querySelector("td:last-child a, td:last-child button"))) {
+                    limit = cols.length - 1;
+                }
+                for (var j = 0; j < limit; j++) {
+                    var data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").replace(/"/g, '""');
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(";"));
+            }
+            var csvString = csv.join("\n");
+            var blob = new Blob(["\ufeff" + csvString], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement("a");
+            if (link.download !== undefined) {
+                var url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", filename + ".csv");
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+
+        function exportTableToPDF(tableID, filename) {
+            var table = document.getElementById(tableID);
+            if (!table) return;
+            var element = table.cloneNode(true);
+            var actionHeaders = element.querySelectorAll("th:last-child, td:last-child");
+            actionHeaders.forEach(el => el.remove());
+            
+            var container = document.createElement("div");
+            container.style.padding = "20px";
+            container.style.fontFamily = "Inter, sans-serif";
+            
+            var title = document.createElement("h2");
+            title.innerText = filename.replace(/_/g, ' ').toUpperCase();
+            title.style.marginBottom = "20px";
+            title.style.textAlign = "center";
+            title.style.fontWeight = "bold";
+            title.style.color = "#1e293b";
+            container.appendChild(title);
+            
+            element.style.width = "100%";
+            element.style.borderCollapse = "collapse";
+            element.querySelectorAll("th, td").forEach(cell => {
+                cell.style.border = "1px solid #e2e8f0";
+                cell.style.padding = "10px";
+                cell.style.fontSize = "12px";
+            });
+            container.appendChild(element);
+            
+            var opt = {
+                margin:       10,
+                filename:     filename + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(container).save();
+        }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const sidebar = document.querySelector(".sidebar");
+            const sidebarToggle = document.getElementById("sidebarToggle");
+            const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                sidebarToggle.addEventListener("click", function() {
+                    sidebar.classList.toggle("show-sidebar");
+                    sidebarOverlay.classList.toggle("show-overlay");
+                });
+
+                sidebarOverlay.addEventListener("click", function() {
+                    sidebar.classList.remove("show-sidebar");
+                    sidebarOverlay.classList.remove("show-overlay");
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
